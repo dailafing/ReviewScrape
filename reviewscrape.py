@@ -41,7 +41,7 @@ def scrape_techradar(url):
             if tag.has_attr("class"):
                 continue
 
-            text = tag.get_text(strip=True)
+            text = tag.get_text(separator=" ", strip=True)
 
             if len(text) >= 200 and "Matt" not in text:
                 collected.append(text)
