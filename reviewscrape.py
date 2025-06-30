@@ -7,8 +7,10 @@ import argparse
 import sys
 import re
 import json
+import os
 
 MIN_PARAGRAPH_LENGTH = 200
+OUTPUT_PATH = "output_data.jsonl"
 
 def extract_domain(url):
     parsed_url = urlparse(url)
@@ -48,22 +50,37 @@ def scrape_techradar(url):
 
 
 def saveToJSON(collected):
-    if not collected:
-        print("[INFO] No suitable paragraphs found.")
+    existing_inputs = set()
+
+    # Load existing file if it exists
+    if os.path.exists(OUTPUT_PATH):
+        with open(OUTPUT_PATH, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    obj = json.loads(line)
+                    existing_inputs.add(obj.get("input", "").strip())
+                except json.JSONDecodeError:
+                    continue
+
+    new_entries = []
+    for para in collected:
+        para_clean = para.strip()
+        if para_clean not in existing_inputs:
+            new_entries.append({
+                "instruction": "Write a product review based on the provided notes.",
+                "input": para_clean,
+                "output": ""
+            })
+
+    if not new_entries:
+        print("[INFO] No new unique paragraphs to add.")
     else:
-        print(f"[INFO] Found {len(collected)} usable paragraphs.")
-        for i, para in enumerate(collected, 1):
-            print(f"\n[{i}] {para}\n")
+        print(f"[INFO] Adding {len(new_entries)} new unique paragraphs.")
+        with open(OUTPUT_PATH, "a", encoding="utf-8") as f:
+            for entry in new_entries:
+                f.write(json.dumps(entry) + "\n")
 
-        with open("output_techradar.jsonl", "w", encoding="utf-8") as f:
-            for para in collected:
-                f.write(json.dumps({
-                    "instruction": "Write a product review based on the provided notes.",
-                    "input": para,
-                    "output": ""
-                }) + "\n")
-
-        print("[INFO] Exported to output_techradar.jsonl")
+        print(f"[INFO] Appended to {OUTPUT_PATH}")
     
 
 def main():
