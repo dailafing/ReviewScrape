@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import argparse
 import sys
+import re
+import json
 
 MIN_PARAGRAPH_LENGTH = 200
 
