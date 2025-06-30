@@ -24,22 +24,41 @@ def scrape_techradar(url):
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    all_paragraphs = soup.find_all("p")
-    extracted = []
+    collected = []
+    stop_flag = False
 
-    for p in all_paragraphs:
-        # Only include <p> tags with no class attribute
-        if not p.has_attr("class"):
-            text = p.get_text(strip=True)
-            if len(text) >= MIN_PARAGRAPH_LENGTH:
-                extracted.append(text)
+    for tag in soup.find_all(['p', 'h3']):
+        if tag.name == 'h3':
+            span = tag.find('span')
+            if span and "latest updates to this best tvs guide" in span.text.lower():
+                print("[INFO] Detected changelog heading. Halting scraping at this point.")
+                break
 
-    if not extracted:
+        if tag.name == 'p':
+            if tag.has_attr("class"):
+                continue
+
+            text = tag.get_text(strip=True)
+
+            if len(text) >= 200 and "Matt" not in text:
+                collected.append(text)
+
+    if not collected:
         print("[INFO] No suitable paragraphs found.")
     else:
-        print("\n[INFO] Extracted Paragraphs:\n")
-        for i, para in enumerate(extracted, 1):
-            print(f"{'-'*40}\n[{i}] {para}\n")
+        print(f"[INFO] Found {len(collected)} usable paragraphs.")
+        for i, para in enumerate(collected, 1):
+            print(f"\n[{i}] {para}\n")
+
+        with open("output_techradar.jsonl", "w", encoding="utf-8") as f:
+            for para in collected:
+                f.write(json.dumps({
+                    "instruction": "Write a product review based on the provided notes.",
+                    "input": para,
+                    "output": ""
+                }) + "\n")
+
+        print("[INFO] Exported to output_techradar.jsonl")
 
 def main():
     parser = argparse.ArgumentParser(description="Scrape structured review content from known domains.")
