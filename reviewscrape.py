@@ -14,6 +14,7 @@ def extract_domain(url):
     parsed_url = urlparse(url)
     return parsed_url.netloc.lower().replace("www.", "")
 
+
 def scrape_techradar(url):
     try:
         response = requests.get(url, timeout=10)
@@ -59,6 +60,7 @@ def scrape_techradar(url):
                 }) + "\n")
 
         print("[INFO] Exported to output_techradar.jsonl")
+    
 
 def main():
     parser = argparse.ArgumentParser(description="Scrape structured review content from known domains.")
@@ -79,6 +81,7 @@ def main():
         print(f"[ERROR] Unsupported domain: {domain}")
         print("Currently supported domains: techradar.com")
         sys.exit(1)
+        
 
 if __name__ == '__main__':
     main()
