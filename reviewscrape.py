@@ -44,6 +44,10 @@ def scrape_techradar(url):
             if len(text) >= 200 and "Matt" not in text:
                 collected.append(text)
 
+    saveToJSON(collected)
+
+
+def saveToJSON(collected):
     if not collected:
         print("[INFO] No suitable paragraphs found.")
     else:
