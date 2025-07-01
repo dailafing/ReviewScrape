@@ -24,3 +24,4 @@ I'm trying to build a GitHub profile that demonstrates my experience that I've b
 | Create a JSON file containing the scrape.   | I expect the code to create the JSON file containing the scraped information.    | The file was created sucsessfuly.        | ✅        |
 | Exclude irrelevant sections                 | Stop scraping the page after a given point to avoid footers and notes            | Correctly excluding irrelevant data.     | ✅        |
 | Code should not duplicate entries           | When running the code several times, there should be no duplicate entries.       | There are no duplicate entries.          | ✅        |
+| Automated processing of multiple URLs.      | I expect the -list mylist.txt function to process multiple URLs                  | Works perfectly, each with 2 second pause| ✅        |
