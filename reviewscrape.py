@@ -11,6 +11,7 @@ import os
 
 MIN_PARAGRAPH_LENGTH = 200
 OUTPUT_PATH = "output_data.jsonl"
+DESTINATION_NAME = "ReviewCave.co.uk"
 
 def extract_domain(url):
     parsed_url = urlparse(url)
@@ -63,6 +64,7 @@ def scrape_techradar(url):
                 continue
 
             if len(text) >= MIN_PARAGRAPH_LENGTH:
+                text = sanitize_brands(text)
                 collected.append({
                     "context": current_heading or "",
                     "input": text
@@ -105,6 +107,22 @@ def saveToJSON(collected):
 
         print(f"[INFO] Appended to {OUTPUT_PATH}")
     
+
+def sanitize_brands(text):
+    """
+    Replace all known brand mentions with DESTINATION_NAME.
+    Case-insensitive, safe for inline text, and avoids partial word matches.
+    """
+    brands_to_replace = [
+        "TechRadar",  # Add more brands here later: "Wired", "Forbes", etc.
+    ]
+
+    for brand in brands_to_replace:
+        pattern = re.compile(rf"\b{re.escape(brand)}\b", flags=re.IGNORECASE)
+        text = pattern.sub(DESTINATION_NAME, text)
+
+    return text
+
 
 def main():
     parser = argparse.ArgumentParser(description="Scrape structured review content from known domains.")
