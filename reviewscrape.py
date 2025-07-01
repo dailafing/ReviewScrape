@@ -8,6 +8,7 @@ import sys
 import re
 import json
 import os
+import time
 
 MIN_PARAGRAPH_LENGTH = 200
 OUTPUT_PATH = "output_data.jsonl"
@@ -126,23 +127,45 @@ def sanitize_brands(text):
 
 def main():
     parser = argparse.ArgumentParser(description="Scrape structured review content from known domains.")
-    parser.add_argument('-url', '--url', type=str, help='URL of the review article to scrape')
+    parser.add_argument('-url', '--url', type=str, help='URL of a single review article to scrape')
+    parser.add_argument('-list', '--list', type=str, help='Path to a .txt file with URLs to scrape')
     args = parser.parse_args()
 
-    url = args.url
-    if not url:
-        url = input("Enter the URL of the review page: ").strip()
+    urls = []
 
-    domain = extract_domain(url)
+    if args.list:
+        list_path = args.list.strip()
+        if not os.path.exists(list_path):
+            print(f"[ERROR] List file not found: {list_path}")
+            sys.exit(1)
 
-    print(f"[INFO] Detected domain: {domain}")
+        with open(list_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    urls.append(line)
 
-    if "techradar.com" in domain:
-        scrape_techradar(url)
+    elif args.url:
+        urls.append(args.url.strip())
     else:
-        print(f"[ERROR] Unsupported domain: {domain}")
-        print("Currently supported domains: techradar.com")
-        sys.exit(1)
+        url = input("Enter the URL of the review page: ").strip()
+        urls.append(url)
+
+    for i, url in enumerate(urls):
+        domain = extract_domain(url)
+        print(f"\n[INFO] ({i+1}/{len(urls)}) Scraping: {url}")
+        print(f"[INFO] Detected domain: {domain}")
+
+        if "techradar.com" in domain:
+            scrape_techradar(url)
+        else:
+            print(f"[ERROR] Unsupported domain: {domain}")
+            print("Currently supported domains: techradar.com")
+
+        if i < len(urls) - 1:
+            print("[INFO] Pausing for 2 seconds before next URL...")
+            time.sleep(2)
+
         
 
 if __name__ == '__main__':
