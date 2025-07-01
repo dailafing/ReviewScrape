@@ -31,9 +31,9 @@ def scrape_techradar(url):
     current_heading = None
 
     stop_keywords = [
-        "writes for", "freelance", "journalist", "Alistair Charlton", "contributor",
+        "writes for", "freelance", "journalist", "Alistair", "contributor",
         "editorial", "byline", "tech enthusiast", "writes about", "worked as", "coverage for",
-        "Matt"
+        "Matt", "Harry", "He enjoys", "Jamie", "Tom Power", "Abigail", "Mike"
     ]
 
     for tag in soup.find_all(['h2', 'h3', 'p']):
