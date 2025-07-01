@@ -115,7 +115,7 @@ def sanitize_brands(text):
     Case-insensitive, safe for inline text, and avoids partial word matches.
     """
     brands_to_replace = [
-        "TechRadar",  # Add more brands here later: "Wired", "Forbes", etc.
+        "TechRadar", "Forbes", "Which?"
     ]
 
     for brand in brands_to_replace:
