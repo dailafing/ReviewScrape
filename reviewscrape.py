@@ -26,25 +26,47 @@ def scrape_techradar(url):
         sys.exit(1)
 
     soup = BeautifulSoup(response.text, 'html.parser')
-
     collected = []
-    stop_flag = False
+    current_heading = None
 
-    for tag in soup.find_all(['p', 'h3']):
+    stop_keywords = [
+        "writes for", "freelance", "journalist", "Alistair Charlton", "contributor",
+        "editorial", "byline", "tech enthusiast", "writes about", "worked as", "coverage for",
+        "Matt"
+    ]
+
+    for tag in soup.find_all(['h2', 'h3', 'p']):
+        # STOP parsing at changelog section
         if tag.name == 'h3':
             span = tag.find('span')
             if span and "latest updates to this best tvs guide" in span.text.lower():
                 print("[INFO] Detected changelog heading. Halting scraping at this point.")
                 break
 
+        # Track current heading context
+        if tag.name == 'h2':
+            current_heading = tag.get_text(separator=" ", strip=True)
+            continue
+
+        # Process paragraph content
         if tag.name == 'p':
             if tag.has_attr("class"):
                 continue
 
+            # Fix <br> tag spacing
+            for br in tag.find_all("br"):
+                br.replace_with(". ")
+
             text = tag.get_text(separator=" ", strip=True)
 
-            if len(text) >= 200 and "Matt" not in text:
-                collected.append(text)
+            if any(kw.lower() in text.lower() for kw in stop_keywords):
+                continue
+
+            if len(text) >= MIN_PARAGRAPH_LENGTH:
+                collected.append({
+                    "context": current_heading or "",
+                    "input": text
+                })
 
     saveToJSON(collected)
 
@@ -52,7 +74,7 @@ def scrape_techradar(url):
 def saveToJSON(collected):
     existing_inputs = set()
 
-    # Load existing file if it exists
+    # Load existing data for deduplication
     if os.path.exists(OUTPUT_PATH):
         with open(OUTPUT_PATH, "r", encoding="utf-8") as f:
             for line in f:
@@ -63,12 +85,13 @@ def saveToJSON(collected):
                     continue
 
     new_entries = []
-    for para in collected:
-        para_clean = para.strip()
-        if para_clean not in existing_inputs:
+    for item in collected:
+        text = item["input"].strip()
+        if text not in existing_inputs:
             new_entries.append({
                 "instruction": "Write a product review based on the provided notes.",
-                "input": para_clean,
+                "context": item["context"].strip(),
+                "input": text,
                 "output": ""
             })
 
